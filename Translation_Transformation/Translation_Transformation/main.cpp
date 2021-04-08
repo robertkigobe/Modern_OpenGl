@@ -1,17 +1,18 @@
 //
 //  main.cpp
-//  Translation_Uniform_Variables
+//  Translation_Transformation
 //
-//  Created by Robert Kigobe on 01/04/2021.
+//  Created by Robert Kigobe on 07/04/2021.
 //
-
 
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <cmath>
-#include <mat4x4.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 
@@ -30,7 +31,7 @@
 const GLint WIDTH = 800, HEIGHT = 600; //window dimensions
 
 GLuint VBO, VAO, shader;
-GLuint uniformXMove; //used to control magnitude of movement
+GLuint uniformModel; //used to control magnitude of movement
 
 //control movement of directions
 bool direction = true;
@@ -45,10 +46,10 @@ static const char* vShader = "                                                \n
                                                                               \n\
 layout (location = 0) in vec3 pos;                                            \n\
                                                                               \n\
-uniform float xMove;                                                          \n\
+uniform mat4 model;                                                          \n\
 void main()                                                                   \n\
 {                                                                             \n\
-    gl_Position = vec4(0.4 * pos.x + xMove, 0.4 * pos.y, pos.z, 1.0);                  \n\
+    gl_Position = model * vec4(0.4 * pos.x, 0.4 * pos.y, pos.z, 1.0);         \n\
 }";
 
 // Fragment Shader
@@ -146,7 +147,7 @@ void CompileShaders()
         return;
     }
     
-    uniformXMove = glGetUniformLocation(shader,"xMove"); //bind a value in the shader
+    uniformModel = glGetUniformLocation(shader,"model"); //bind a value in the shader of the model to be translated
 
 }
 
@@ -227,8 +228,12 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shader);
+        
+        glm::mat4 model; //creates an identity matrix
+        model = glm::translate(model, glm::vec3(0.0f,triOffset,triOffset ));//translates the x value of the model matrix
+        glUniformMatrix4fv(uniformModel,1,GL_FALSE,glm::value_ptr(model));
 
-        glUniform1f(uniformXMove, triOffset);
+//        glUniform1f(uniformModel, triOffset);
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
